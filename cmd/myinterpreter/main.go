@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
 	"os"
 
@@ -28,18 +27,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "Error reading file: %v\n", err)
 		os.Exit(1)
 	}
-	fileScanner := bufio.NewScanner(readFile)
-	fileScanner.Split(bufio.ScanLines)
-	line := 1
-	var fileTokens []tokenizer.Token
-	var fileErrors []tokenizer.Error
-	for fileScanner.Scan() {
-		lineTokens, lineErrors := tokenizer.TokenizeLine(fileScanner.Text(), line)
-		fileTokens = append(fileTokens, lineTokens...)
-		fileErrors = append(fileErrors, lineErrors...)
-		line++
-	}
-	fileTokens = append(fileTokens, tokenizer.Token{Type: tokenizer.EOF, Value: ""})
+	fileTokens, fileErrors := tokenizer.TokenizeFile(readFile)
 
 	for _, err := range fileErrors {
 		fmt.Fprintf(os.Stderr, "%s\n", err.String())
@@ -49,7 +37,5 @@ func main() {
 	}
 	if len(fileErrors) > 0 {
 		os.Exit(65)
-	} else {
-		os.Exit(0)
 	}
 }

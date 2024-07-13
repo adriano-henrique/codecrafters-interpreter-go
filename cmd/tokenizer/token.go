@@ -1,6 +1,27 @@
 package tokenizer
 
-func TokenizeLine(rawFileContents string, line int) ([]Token, []Error) {
+import (
+	"bufio"
+	"os"
+)
+
+func TokenizeFile(readFile *os.File) ([]Token, []Error) {
+	fileScanner := bufio.NewScanner(readFile)
+	fileScanner.Split(bufio.ScanLines)
+	line := 1
+	var fileTokens []Token
+	var fileErrors []Error
+	for fileScanner.Scan() {
+		lineTokens, lineErrors := tokenizeLine(fileScanner.Text(), line)
+		fileTokens = append(fileTokens, lineTokens...)
+		fileErrors = append(fileErrors, lineErrors...)
+		line++
+	}
+	fileTokens = append(fileTokens, Token{Type: EOF, Value: ""})
+	return fileTokens, fileErrors
+}
+
+func tokenizeLine(rawFileContents string, line int) ([]Token, []Error) {
 	var tokens []Token
 	var errors []Error
 	for _, c := range rawFileContents {
