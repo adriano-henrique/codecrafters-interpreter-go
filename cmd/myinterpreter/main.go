@@ -30,6 +30,6 @@ func main() {
 
 	tokenizedFile := tokenizer.Tokenize(string(fileContents))
 	for _, token := range tokenizedFile {
-		fmt.Printf("%s %s NULL\n", token.Type.String(), token.Value)
+		fmt.Printf("%s %s null\n", token.Type.String(), token.Value)
 	}
 }
