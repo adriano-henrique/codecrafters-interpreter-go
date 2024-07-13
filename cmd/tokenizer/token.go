@@ -1,9 +1,8 @@
 package tokenizer
 
-import "fmt"
-
-func Tokenize(rawFileContents string) []Token {
+func Tokenize(rawFileContents string) ([]Token, []Error) {
 	var tokens []Token
+	var errors []Error
 	for _, c := range rawFileContents {
 		switch c {
 		case '(':
@@ -29,9 +28,9 @@ func Tokenize(rawFileContents string) []Token {
 		case '/':
 			tokens = append(tokens, Token{Type: SLASH, Value: string(c)})
 		default:
-			fmt.Printf("Unknown character: %c\n", c)
+			errors = append(errors, Error{Type: UNEXPECTED_CHARACTER, Value: string(c)})
 		}
 	}
 	tokens = append(tokens, Token{Type: EOF, Value: ""})
-	return tokens
+	return tokens, errors
 }

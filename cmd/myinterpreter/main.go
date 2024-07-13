@@ -28,8 +28,16 @@ func main() {
 		os.Exit(1)
 	}
 
-	tokenizedFile := tokenizer.Tokenize(string(fileContents))
+	tokenizedFile, errors := tokenizer.Tokenize(string(fileContents))
+	for _, err := range errors {
+		fmt.Printf("Error: %s %s\n", err.String(), err.Value)
+	}
 	for _, token := range tokenizedFile {
 		fmt.Printf("%s %s null\n", token.Type.String(), token.Value)
+	}
+	if len(errors) > 0 {
+		os.Exit(65)
+	} else {
+		os.Exit(0)
 	}
 }

@@ -1,5 +1,19 @@
 package tokenizer
 
+import "fmt"
+
+type ErrorType int
+
+const (
+	UNEXPECTED_CHARACTER ErrorType = iota
+)
+
+type Error struct {
+	Type  ErrorType
+	Value string
+	Line  int
+}
+
 type TokenType int
 
 const (
@@ -20,6 +34,15 @@ const (
 type Token struct {
 	Type  TokenType
 	Value string
+}
+
+func (e Error) String() string {
+	switch e.Type {
+	case UNEXPECTED_CHARACTER:
+		return fmt.Sprintf("[line %d] Unexpected character: %s", e.Line, e.Value)
+	default:
+		return "Unknown error"
+	}
 }
 
 func (t TokenType) String() string {
