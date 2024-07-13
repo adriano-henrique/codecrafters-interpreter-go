@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"os"
 
@@ -22,20 +23,31 @@ func main() {
 	}
 
 	filename := os.Args[2]
-	fileContents, err := os.ReadFile(filename)
+	readFile, err := os.Open(filename)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error reading file: %v\n", err)
 		os.Exit(1)
 	}
-
-	tokenizedFile, errors := tokenizer.Tokenize(string(fileContents))
-	for _, err := range errors {
-		fmt.Printf("Error: %s %s\n", err.String(), err.Value)
+	fileScanner := bufio.NewScanner(readFile)
+	fileScanner.Split(bufio.ScanLines)
+	line := 1
+	var fileTokens []tokenizer.Token
+	var fileErrors []tokenizer.Error
+	for fileScanner.Scan() {
+		lineTokens, lineErrors := tokenizer.TokenizeLine(fileScanner.Text(), line)
+		fileTokens = append(fileTokens, lineTokens...)
+		fileErrors = append(fileErrors, lineErrors...)
+		line++
 	}
-	for _, token := range tokenizedFile {
+	fileTokens = append(fileTokens, tokenizer.Token{Type: tokenizer.EOF, Value: ""})
+
+	for _, err := range fileErrors {
+		fmt.Fprintf(os.Stderr, "%s\n", err.String())
+	}
+	for _, token := range fileTokens {
 		fmt.Printf("%s %s null\n", token.Type.String(), token.Value)
 	}
-	if len(errors) > 0 {
+	if len(fileErrors) > 0 {
 		os.Exit(65)
 	} else {
 		os.Exit(0)

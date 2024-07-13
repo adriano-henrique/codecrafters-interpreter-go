@@ -1,6 +1,6 @@
 package tokenizer
 
-func Tokenize(rawFileContents string) ([]Token, []Error) {
+func TokenizeLine(rawFileContents string, line int) ([]Token, []Error) {
 	var tokens []Token
 	var errors []Error
 	for _, c := range rawFileContents {
@@ -28,9 +28,8 @@ func Tokenize(rawFileContents string) ([]Token, []Error) {
 		case '/':
 			tokens = append(tokens, Token{Type: SLASH, Value: string(c)})
 		default:
-			errors = append(errors, Error{Type: UNEXPECTED_CHARACTER, Value: string(c)})
+			errors = append(errors, Error{Type: UNEXPECTED_CHARACTER, Value: string(c), Line: line})
 		}
 	}
-	tokens = append(tokens, Token{Type: EOF, Value: ""})
 	return tokens, errors
 }

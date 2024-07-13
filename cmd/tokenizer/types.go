@@ -39,7 +39,7 @@ type Token struct {
 func (e Error) String() string {
 	switch e.Type {
 	case UNEXPECTED_CHARACTER:
-		return fmt.Sprintf("[line %d] Unexpected character: %s", e.Line, e.Value)
+		return fmt.Sprintf("[line %d] Error: Unexpected character: %s", e.Line, e.Value)
 	default:
 		return "Unknown error"
 	}
