@@ -62,6 +62,14 @@ func tokenizeLine(rawFileContents string, line int) ([]Token, []Error) {
 			} else {
 				tokens = append(tokens, Token{Type: EQUAL, Value: string(c)})
 			}
+		case '!':
+			if peekChar == '=' {
+				tokens = append(tokens, Token{Type: BANG_EQUAL, Value: string(c) + string(rawFileContents[i+1])})
+				i += 2
+				continue
+			} else {
+				tokens = append(tokens, Token{Type: BANG, Value: string(c)})
+			}
 		default:
 			errors = append(errors, Error{Type: UNEXPECTED_CHARACTER, Value: string(c), Line: line})
 		}

@@ -31,6 +31,8 @@ const (
 	SLASH
 	EQUAL
 	EQUAL_EQUAL
+	BANG
+	BANG_EQUAL
 )
 
 type Token struct {
@@ -77,6 +79,10 @@ func (t TokenType) String() string {
 		return "EQUAL"
 	case EQUAL_EQUAL:
 		return "EQUAL_EQUAL"
+	case BANG:
+		return "BANG"
+	case BANG_EQUAL:
+		return "BANG_EQUAL"
 	default:
 		return "UNKNOWN"
 	}
