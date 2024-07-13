@@ -52,8 +52,6 @@ func tokenizeLine(rawFileContents string, line int) ([]Token, []Error) {
 			tokens = append(tokens, Token{Type: SEMICOLON, Value: string(c)})
 		case '*':
 			tokens = append(tokens, Token{Type: STAR, Value: string(c)})
-		case '/':
-			tokens = append(tokens, Token{Type: SLASH, Value: string(c)})
 		case '=':
 			handlePeekEqual(c, peekChar, &i, &tokens, EQUAL, EQUAL_EQUAL)
 		case '!':
@@ -62,6 +60,12 @@ func tokenizeLine(rawFileContents string, line int) ([]Token, []Error) {
 			handlePeekEqual(c, peekChar, &i, &tokens, LESS, LESS_EQUAL)
 		case '>':
 			handlePeekEqual(c, peekChar, &i, &tokens, GREATER, GREATER_EQUAL)
+		case '/':
+			if peekChar == '/' {
+				return tokens, errors
+			} else {
+				tokens = append(tokens, Token{Type: SLASH, Value: string(c)})
+			}
 		default:
 			errors = append(errors, Error{Type: UNEXPECTED_CHARACTER, Value: string(c), Line: line})
 		}
