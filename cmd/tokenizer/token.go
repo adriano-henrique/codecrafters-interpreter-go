@@ -66,6 +66,8 @@ func tokenizeLine(rawFileContents string, line int) ([]Token, []Error) {
 			} else {
 				tokens = append(tokens, Token{Type: SLASH, Value: string(c)})
 			}
+		case ' ', '\t':
+			// Ignore whitespace
 		default:
 			errors = append(errors, Error{Type: UNEXPECTED_CHARACTER, Value: string(c), Line: line})
 		}
