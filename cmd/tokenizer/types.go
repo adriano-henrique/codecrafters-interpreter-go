@@ -1,11 +1,14 @@
 package tokenizer
 
-import "fmt"
+import (
+	"fmt"
+)
 
 type ErrorType int
 
 const (
 	UNEXPECTED_CHARACTER ErrorType = iota
+	UNTERMINATED_STRING
 )
 
 type Error struct {
@@ -37,17 +40,21 @@ const (
 	LESS_EQUAL
 	GREATER
 	GREATER_EQUAL
+	STRING
 )
 
 type Token struct {
-	Type  TokenType
-	Value string
+	Type        TokenType
+	StringValue string
+	Value       string
 }
 
 func (e Error) String() string {
 	switch e.Type {
 	case UNEXPECTED_CHARACTER:
 		return fmt.Sprintf("[line %d] Error: Unexpected character: %s", e.Line, e.Value)
+	case UNTERMINATED_STRING:
+		return fmt.Sprintf("[line %d] Error: Unterminated string.", e.Line)
 	default:
 		return "Unknown error"
 	}
@@ -95,6 +102,8 @@ func (t TokenType) String() string {
 		return "GREATER"
 	case GREATER_EQUAL:
 		return "GREATER_EQUAL"
+	case STRING:
+		return "STRING"
 	default:
 		return "UNKNOWN"
 	}

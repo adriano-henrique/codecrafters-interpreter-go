@@ -33,7 +33,7 @@ func main() {
 		fmt.Fprintf(os.Stderr, "%s\n", err.String())
 	}
 	for _, token := range fileTokens {
-		fmt.Printf("%s %s null\n", token.Type.String(), token.Value)
+		fmt.Printf("%s %s %s\n", token.Type.String(), token.StringValue, token.Value)
 	}
 	if len(fileErrors) > 0 {
 		os.Exit(65)

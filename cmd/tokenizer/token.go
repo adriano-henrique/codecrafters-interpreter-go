@@ -2,6 +2,7 @@ package tokenizer
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 )
 
@@ -11,17 +12,21 @@ func TokenizeFile(readFile *os.File) ([]Token, []Error) {
 	line := 1
 	var fileTokens []Token
 	var fileErrors []Error
+	var stringLiteral = ""
 	for fileScanner.Scan() {
-		lineTokens, lineErrors := tokenizeLine(fileScanner.Text(), line)
+		lineTokens, lineErrors := tokenizeLine(fileScanner.Text(), line, &stringLiteral)
 		fileTokens = append(fileTokens, lineTokens...)
 		fileErrors = append(fileErrors, lineErrors...)
 		line++
 	}
-	fileTokens = append(fileTokens, Token{Type: EOF, Value: ""})
+	if stringLiteral != "" {
+		fileErrors = append(fileErrors, Error{Type: UNTERMINATED_STRING, Value: "null", Line: line - 1})
+	}
+	fileTokens = append(fileTokens, Token{Type: EOF, StringValue: "", Value: "null"})
 	return fileTokens, fileErrors
 }
 
-func tokenizeLine(rawFileContents string, line int) ([]Token, []Error) {
+func tokenizeLine(rawFileContents string, line int, stringLiteral *string) ([]Token, []Error) {
 	var tokens []Token
 	var errors []Error
 	i := 0
@@ -33,25 +38,25 @@ func tokenizeLine(rawFileContents string, line int) ([]Token, []Error) {
 		}
 		switch c {
 		case '(':
-			tokens = append(tokens, Token{Type: LEFT_PAREN, Value: string(c)})
+			tokens = append(tokens, Token{Type: LEFT_PAREN, StringValue: string(c), Value: "null"})
 		case ')':
-			tokens = append(tokens, Token{Type: RIGHT_PAREN, Value: string(c)})
+			tokens = append(tokens, Token{Type: RIGHT_PAREN, StringValue: string(c), Value: "null"})
 		case '{':
-			tokens = append(tokens, Token{Type: LEFT_BRACE, Value: string(c)})
+			tokens = append(tokens, Token{Type: LEFT_BRACE, StringValue: string(c), Value: "null"})
 		case '}':
-			tokens = append(tokens, Token{Type: RIGHT_BRACE, Value: string(c)})
+			tokens = append(tokens, Token{Type: RIGHT_BRACE, StringValue: string(c), Value: "null"})
 		case ',':
-			tokens = append(tokens, Token{Type: COMMA, Value: string(c)})
+			tokens = append(tokens, Token{Type: COMMA, StringValue: string(c), Value: "null"})
 		case '.':
-			tokens = append(tokens, Token{Type: DOT, Value: string(c)})
+			tokens = append(tokens, Token{Type: DOT, StringValue: string(c), Value: "null"})
 		case '-':
-			tokens = append(tokens, Token{Type: MINUS, Value: string(c)})
+			tokens = append(tokens, Token{Type: MINUS, StringValue: string(c), Value: "null"})
 		case '+':
-			tokens = append(tokens, Token{Type: PLUS, Value: string(c)})
+			tokens = append(tokens, Token{Type: PLUS, StringValue: string(c), Value: "null"})
 		case ';':
-			tokens = append(tokens, Token{Type: SEMICOLON, Value: string(c)})
+			tokens = append(tokens, Token{Type: SEMICOLON, StringValue: string(c), Value: "null"})
 		case '*':
-			tokens = append(tokens, Token{Type: STAR, Value: string(c)})
+			tokens = append(tokens, Token{Type: STAR, StringValue: string(c), Value: "null"})
 		case '=':
 			handlePeekEqual(c, peekChar, &i, &tokens, EQUAL, EQUAL_EQUAL)
 		case '!':
@@ -64,10 +69,27 @@ func tokenizeLine(rawFileContents string, line int) ([]Token, []Error) {
 			if peekChar == '/' {
 				return tokens, errors
 			} else {
-				tokens = append(tokens, Token{Type: SLASH, Value: string(c)})
+				tokens = append(tokens, Token{Type: SLASH, StringValue: string(c), Value: "null"})
 			}
 		case ' ', '\t':
 			// Ignore whitespace
+		case '"':
+			if *stringLiteral != "" {
+				tokens = append(tokens, Token{Type: STRING, StringValue: fmt.Sprintf("\"%s\"", *stringLiteral), Value: *stringLiteral})
+				*stringLiteral = ""
+			} else {
+				j := i + 1
+				for j < len(rawFileContents) {
+					i = j
+					if rawFileContents[j] != '"' {
+						*stringLiteral += string(rawFileContents[j])
+					} else {
+						i = j - 1
+						break
+					}
+					j++
+				}
+			}
 		default:
 			errors = append(errors, Error{Type: UNEXPECTED_CHARACTER, Value: string(c), Line: line})
 		}
@@ -78,9 +100,9 @@ func tokenizeLine(rawFileContents string, line int) ([]Token, []Error) {
 
 func handlePeekEqual(currChar rune, peekChar rune, index *int, tokens *[]Token, singleToken TokenType, doubleToken TokenType) {
 	if peekChar == '=' {
-		*tokens = append(*tokens, Token{Type: doubleToken, Value: string(currChar) + string(peekChar)})
+		*tokens = append(*tokens, Token{Type: doubleToken, StringValue: string(currChar) + string(peekChar), Value: "null"})
 		*index += 1
 	} else {
-		*tokens = append(*tokens, Token{Type: singleToken, Value: string(currChar)})
+		*tokens = append(*tokens, Token{Type: singleToken, StringValue: string(currChar), Value: "null"})
 	}
 }
