@@ -17,7 +17,6 @@ const (
 	SLASH
 )
 
-// ,, ., -, +, ;, *. /
 type Token struct {
 	Type  TokenType
 	Value string
