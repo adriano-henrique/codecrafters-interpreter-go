@@ -55,25 +55,26 @@ func tokenizeLine(rawFileContents string, line int) ([]Token, []Error) {
 		case '/':
 			tokens = append(tokens, Token{Type: SLASH, Value: string(c)})
 		case '=':
-			if peekChar == '=' {
-				tokens = append(tokens, Token{Type: EQUAL_EQUAL, Value: string(c) + string(rawFileContents[i+1])})
-				i += 2
-				continue
-			} else {
-				tokens = append(tokens, Token{Type: EQUAL, Value: string(c)})
-			}
+			handlePeekEqual(c, peekChar, &i, &tokens, EQUAL, EQUAL_EQUAL)
 		case '!':
-			if peekChar == '=' {
-				tokens = append(tokens, Token{Type: BANG_EQUAL, Value: string(c) + string(rawFileContents[i+1])})
-				i += 2
-				continue
-			} else {
-				tokens = append(tokens, Token{Type: BANG, Value: string(c)})
-			}
+			handlePeekEqual(c, peekChar, &i, &tokens, BANG, BANG_EQUAL)
+		case '<':
+			handlePeekEqual(c, peekChar, &i, &tokens, LESS, LESS_EQUAL)
+		case '>':
+			handlePeekEqual(c, peekChar, &i, &tokens, GREATER, GREATER_EQUAL)
 		default:
 			errors = append(errors, Error{Type: UNEXPECTED_CHARACTER, Value: string(c), Line: line})
 		}
 		i++
 	}
 	return tokens, errors
+}
+
+func handlePeekEqual(currChar rune, peekChar rune, index *int, tokens *[]Token, singleToken TokenType, doubleToken TokenType) {
+	if peekChar == '=' {
+		*tokens = append(*tokens, Token{Type: doubleToken, Value: string(currChar) + string(peekChar)})
+		*index += 1
+	} else {
+		*tokens = append(*tokens, Token{Type: singleToken, Value: string(currChar)})
+	}
 }
