@@ -24,7 +24,13 @@ func TokenizeFile(readFile *os.File) ([]Token, []Error) {
 func tokenizeLine(rawFileContents string, line int) ([]Token, []Error) {
 	var tokens []Token
 	var errors []Error
-	for _, c := range rawFileContents {
+	i := 0
+	for i < len(rawFileContents) {
+		c := rune(rawFileContents[i])
+		peekChar := rune(0)
+		if i+1 < len(rawFileContents) {
+			peekChar = rune(rawFileContents[i+1])
+		}
 		switch c {
 		case '(':
 			tokens = append(tokens, Token{Type: LEFT_PAREN, Value: string(c)})
@@ -48,9 +54,18 @@ func tokenizeLine(rawFileContents string, line int) ([]Token, []Error) {
 			tokens = append(tokens, Token{Type: STAR, Value: string(c)})
 		case '/':
 			tokens = append(tokens, Token{Type: SLASH, Value: string(c)})
+		case '=':
+			if peekChar == '=' {
+				tokens = append(tokens, Token{Type: EQUAL_EQUAL, Value: string(c) + string(rawFileContents[i+1])})
+				i += 2
+				continue
+			} else {
+				tokens = append(tokens, Token{Type: EQUAL, Value: string(c)})
+			}
 		default:
 			errors = append(errors, Error{Type: UNEXPECTED_CHARACTER, Value: string(c), Line: line})
 		}
+		i++
 	}
 	return tokens, errors
 }

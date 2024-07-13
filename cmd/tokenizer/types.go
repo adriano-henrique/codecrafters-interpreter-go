@@ -29,6 +29,8 @@ const (
 	SEMICOLON
 	STAR
 	SLASH
+	EQUAL
+	EQUAL_EQUAL
 )
 
 type Token struct {
@@ -71,6 +73,10 @@ func (t TokenType) String() string {
 		return "STAR"
 	case SLASH:
 		return "SLASH"
+	case EQUAL:
+		return "EQUAL"
+	case EQUAL_EQUAL:
+		return "EQUAL_EQUAL"
 	default:
 		return "UNKNOWN"
 	}
