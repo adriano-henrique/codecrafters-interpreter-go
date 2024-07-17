@@ -26,7 +26,7 @@ func TokenizeFile(readFile *os.File) ([]Token, []Error) {
 	return fileTokens, fileErrors
 }
 
-func tokenizeLine(rawFileContents string, line int, stringLiteral *string) ([]Token, []Error) {
+func tokenizeLine(rawFileContents string, line int) ([]Token, []Error) {
 	var tokens []Token
 	var errors []Error
 	i := 0
@@ -74,22 +74,22 @@ func tokenizeLine(rawFileContents string, line int, stringLiteral *string) ([]To
 		case ' ', '\t':
 			// Ignore whitespace
 		case '"':
-			if *stringLiteral != "" {
-				tokens = append(tokens, Token{Type: STRING, StringValue: fmt.Sprintf("\"%s\"", *stringLiteral), Value: *stringLiteral})
-				*stringLiteral = ""
-			} else {
-				j := i + 1
-				for j < len(rawFileContents) {
-					i = j
-					if rawFileContents[j] != '"' {
-						*stringLiteral += string(rawFileContents[j])
-					} else {
-						i = j - 1
-						break
-					}
-					j++
+			var stringLiteral string
+			j := i + 1
+			for j < len(rawFileContents) {
+				if rawFileContents[j] != '"' {
+					stringLiteral += string(rawFileContents[j])
+				} else {
+					break
 				}
+				j++
 			}
+			if j == len(rawFileContents) && rawFileContents[j-1] != '"' {
+				errors = append(errors, Error{Type: UNTERMINATED_STRING, Value: "null", Line: line})
+			} else {
+				tokens = append(tokens, Token{Type: STRING, StringValue: fmt.Sprintf("\"%s\"", stringLiteral), Value: stringLiteral})
+			}
+			i = j
 		default:
 			errors = append(errors, Error{Type: UNEXPECTED_CHARACTER, Value: string(c), Line: line})
 		}
