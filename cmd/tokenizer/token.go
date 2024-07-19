@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"unicode"
 )
 
 func TokenizeFile(readFile *os.File) ([]Token, []Error) {
@@ -12,15 +13,11 @@ func TokenizeFile(readFile *os.File) ([]Token, []Error) {
 	line := 1
 	var fileTokens []Token
 	var fileErrors []Error
-	var stringLiteral = ""
 	for fileScanner.Scan() {
-		lineTokens, lineErrors := tokenizeLine(fileScanner.Text(), line, &stringLiteral)
+		lineTokens, lineErrors := tokenizeLine(fileScanner.Text(), line)
 		fileTokens = append(fileTokens, lineTokens...)
 		fileErrors = append(fileErrors, lineErrors...)
 		line++
-	}
-	if stringLiteral != "" {
-		fileErrors = append(fileErrors, Error{Type: UNTERMINATED_STRING, Value: "null", Line: line - 1})
 	}
 	fileTokens = append(fileTokens, Token{Type: EOF, StringValue: "", Value: "null"})
 	return fileTokens, fileErrors
@@ -90,12 +87,71 @@ func tokenizeLine(rawFileContents string, line int) ([]Token, []Error) {
 				tokens = append(tokens, Token{Type: STRING, StringValue: fmt.Sprintf("\"%s\"", stringLiteral), Value: stringLiteral})
 			}
 			i = j
+		case '0', '1', '2', '3', '4', '5', '6', '7', '8', '9':
+			var auxNumberList []string
+			var numberLiteral string
+			j := i
+			for j < len(rawFileContents) {
+				if !unicode.IsDigit(rune(rawFileContents[j])) && rawFileContents[j] != '.' {
+					auxNumberList = append(auxNumberList, numberLiteral)
+					numberLiteral = ""
+					break
+				}
+				if rawFileContents[j] == '.' {
+					auxNumberList = append(auxNumberList, numberLiteral)
+					numberLiteral = ""
+					auxNumberList = append(auxNumberList, string(rawFileContents[j]))
+				}
+				if unicode.IsDigit(rune(rawFileContents[j])) {
+					numberLiteral += string(rawFileContents[j])
+				}
+				j++
+			}
+			if numberLiteral != "" {
+				auxNumberList = append(auxNumberList, numberLiteral)
+			}
+			i = j
+			fmt.Println(auxNumberList)
 		default:
 			errors = append(errors, Error{Type: UNEXPECTED_CHARACTER, Value: string(c), Line: line})
 		}
 		i++
 	}
 	return tokens, errors
+}
+
+func handleNumberTokenization(rawFileContents string, currentIndex int) ([]Token, []Error, int) {
+	var endIndex int
+	auxNumberList, endIndex := buildNumberTokenList(currentIndex, rawFileContents)
+	fmt.Println(auxNumberList)
+	fmt.Println(endIndex)
+	return []Token{}, []Error{}, endIndex
+}
+
+func buildNumberTokenList(currentIndex int, rawFileContents string) ([]string, int) {
+	var auxNumberList []string
+	var numberLiteral string
+	j := currentIndex
+	for j < len(rawFileContents) {
+		if !unicode.IsDigit(rune(rawFileContents[j])) && rawFileContents[j] != '.' {
+			auxNumberList = append(auxNumberList, numberLiteral)
+			numberLiteral = ""
+			break
+		}
+		if rawFileContents[j] == '.' {
+			auxNumberList = append(auxNumberList, numberLiteral)
+			numberLiteral = ""
+			auxNumberList = append(auxNumberList, string(rawFileContents[j]))
+		}
+		if unicode.IsDigit(rune(rawFileContents[j])) {
+			numberLiteral += string(rawFileContents[j])
+		}
+		j++
+	}
+	if numberLiteral != "" {
+		auxNumberList = append(auxNumberList, numberLiteral)
+	}
+	return auxNumberList, j
 }
 
 func handlePeekEqual(currChar rune, peekChar rune, index *int, tokens *[]Token, singleToken TokenType, doubleToken TokenType) {

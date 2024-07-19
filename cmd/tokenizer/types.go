@@ -41,6 +41,7 @@ const (
 	GREATER
 	GREATER_EQUAL
 	STRING
+	NUMBER
 )
 
 type Token struct {
